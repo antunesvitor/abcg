@@ -42,6 +42,7 @@ struct abcg::OpenGLSettings {
   int stencilSize{8};
   int samples{0};
   bool vsync{false};
+  bool preserveWebGLDrawingBuffer{false};
 };
 
 struct abcg::WindowSettings {
@@ -69,7 +70,7 @@ class abcg::OpenGLWindow {
   [[nodiscard]] OpenGLSettings getOpenGLSettings() noexcept;
   [[nodiscard]] WindowSettings getWindowSettings() noexcept;
   void setOpenGLSettings(const OpenGLSettings& openGLSettings) noexcept;
-  void setWindowSettings(const WindowSettings& windowSettings) noexcept;
+  void setWindowSettings(const WindowSettings& windowSettings);
 
  protected:
   virtual void handleEvent(SDL_Event& event);

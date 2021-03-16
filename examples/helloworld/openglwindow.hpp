@@ -19,9 +19,12 @@ class OpenGLWindow : public abcg::OpenGLWindow {
   GLuint m_vboColors{};
   GLuint m_program{};
 
+  int m_viewportWidth{};
+  int m_viewportHeight{};
+
   bool m_showDemoWindow{false};
   bool m_showAnotherWindow{false};
-  std::array<float, 4> m_clearColor{0.9f, 0.91f, 0.92f, 1.00f};
+  std::array<float, 4> m_clearColor{0.906f, 0.910f, 0.918f, 1.00f};
 };
 
 #endif

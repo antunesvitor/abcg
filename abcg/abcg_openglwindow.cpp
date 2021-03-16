@@ -192,7 +192,16 @@ void abcg::OpenGLWindow::setOpenGLSettings(
 }
 
 void abcg::OpenGLWindow::setWindowSettings(
-    const WindowSettings &windowSettings) noexcept {
+    const WindowSettings &windowSettings) {
+  if (windowSettings.title != m_windowSettings.title) {
+    SDL_SetWindowTitle(m_window, windowSettings.title.c_str());
+  }
+
+  if (windowSettings.width != m_windowSettings.width ||
+      windowSettings.height != m_windowSettings.height) {
+    SDL_SetWindowSize(m_window, windowSettings.width, windowSettings.height);
+  }
+
   m_windowSettings = windowSettings;
 }
 
@@ -244,18 +253,24 @@ void abcg::OpenGLWindow::paintUI() {
       int windowHeight{};
       SDL_GetWindowSize(m_window, &windowWidth, &windowHeight);
 
+      auto widgetSize{ImVec2(150.0f, 30.0f)};
+      auto windowBorder{ImVec2(16.0f, 16.0f)};
+
+      ImGui::SetNextWindowSize(
+          ImVec2(widgetSize.x + windowBorder.x, widgetSize.y + windowBorder.y));
+      ImGui::SetNextWindowPos(ImVec2(5, static_cast<float>(windowHeight) -
+                                            (widgetSize.y + windowBorder.y) -
+                                            5));
+
       ImGui::Begin("Fullscreen", nullptr,
                    ImGuiWindowFlags_NoDecoration |
                        ImGuiWindowFlags_NoBringToFrontOnFocus |
                        ImGuiWindowFlags_NoFocusOnAppearing);
 
-      if (ImGui::Button("Toggle fullscreen", ImVec2(150.0f, 30.0f))) {
+      if (ImGui::Button("Toggle fullscreen", widgetSize)) {
         toggleFullscreen();
       }
 
-      ImVec2 widgetSize{ImGui::GetWindowSize()};
-      ImGui::SetWindowPos(
-          ImVec2(5, static_cast<float>(windowHeight) - widgetSize.y - 5));
       ImGui::End();
     }
   }
@@ -492,6 +507,14 @@ void abcg::OpenGLWindow::initialize(std::string_view basePath) {
 
   m_assetsPath = std::string(basePath) + "/assets/";
 
+#if defined(__EMSCRIPTEN__)
+  if (m_openGLSettings.preserveWebGLDrawingBuffer) {
+    emscripten_run_script(
+        "canvas.getContext('webgl2', {preserveDrawingBuffer : true});\n"
+        "canvas.style.backgroundColor = '#000000';");
+  }
+#endif
+
   // Shortcuts
   auto &majorVersion{m_openGLSettings.majorVersion};
   auto &minorVersion{m_openGLSettings.minorVersion};
@@ -634,6 +657,8 @@ void abcg::OpenGLWindow::initialize(std::string_view basePath) {
     m_viewportWidth = width;
     m_viewportHeight = height;
     resizeGL(width, height);
+  } else {
+    resizeGL(m_windowSettings.width, m_windowSettings.height);
   }
 }
 
